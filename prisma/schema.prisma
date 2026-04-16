@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  EMPLOYEE
+  ADMIN
+}
+
+enum RentalStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+model UserAccount {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+
+  customer Customer?
+  employee Employee?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id            Int      @id @default(autoincrement())
+  fullName      String
+  email         String   @unique
+  phone         String
+  address       String
+  driverLicense String
+  dateOfBirth   DateTime
+
+  userId Int  @unique
+  user   UserAccount @relation(fields: [userId], references: [id])
+
+  rentals Rental[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  email     String   @unique
+  position  String
+  hireDate  DateTime
+
+  userId Int  @unique
+  user   UserAccount @relation(fields: [userId], references: [id])
+
+  rentals Rental[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Car {
+  id              Int     @id @default(autoincrement())
+  brand           String
+  model           String
+  carType         String
+  color           String
+  licensePlate    String  @unique
+  manufactureYear Int
+  pricePerDay     Float
+  capacity        Int
+  mileage         Float
+  status          String
+
+  description     String?
+  imagePath       String?
+  publicImageId   String?
+
+  rentals Rental[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rental {
+  id             Int           @id @default(autoincrement())
+  rentalStatus   RentalStatus
+  issuedAt       DateTime      @default(now())
+
+  pickUpAt       DateTime
+  dropOffAt      DateTime
+
+  pickUpLocation  String
+  dropOffLocation String
+
+  totalAmount Float
+
+  carId      Int
+  customerId Int
+  employeeId Int?
+
+  car      Car      @relation(fields: [carId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  employee Employee? @relation(fields: [employeeId], references: [id])
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id          Int           @id @default(autoincrement())
+  amount      Float
+  paymentDate DateTime      @default(now())
+  method      PaymentMethod
+  isPaid      Boolean       @default(false)
+
+  rentalId Int
+  rental   Rental @relation(fields: [rentalId], references: [id])
+
+  createdAt DateTime @default(now())
+}
