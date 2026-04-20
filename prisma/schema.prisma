@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CarStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  DELETED
+}
+
 enum Role {
   CUSTOMER
   EMPLOYEE
@@ -27,7 +34,7 @@ enum PaymentMethod {
 }
 
 model UserAccount {
-  id           Int      @id @default(autoincrement())
+  id           String @id @default(uuid())
   email        String   @unique
   passwordHash String
   role         Role
@@ -41,7 +48,7 @@ model UserAccount {
 }
 
 model Customer {
-  id            Int      @id @default(autoincrement())
+  id            String @id @default(uuid())
   fullName      String
   email         String   @unique
   phone         String
@@ -49,7 +56,7 @@ model Customer {
   driverLicense String
   dateOfBirth   DateTime
 
-  userId Int  @unique
+  userId String  @unique
   user   UserAccount @relation(fields: [userId], references: [id])
 
   rentals Rental[]
@@ -59,13 +66,13 @@ model Customer {
 }
 
 model Employee {
-  id        Int      @id @default(autoincrement())
+  id        String @id @default(uuid())
   fullName  String
   email     String   @unique
   position  String
   hireDate  DateTime
 
-  userId Int  @unique
+  userId String  @unique
   user   UserAccount @relation(fields: [userId], references: [id])
 
   rentals Rental[]
@@ -75,7 +82,7 @@ model Employee {
 }
 
 model Car {
-  id              Int     @id @default(autoincrement())
+  id              String @id @default(uuid())
   brand           String
   model           String
   carType         String
@@ -85,7 +92,7 @@ model Car {
   pricePerDay     Float
   capacity        Int
   mileage         Float
-  status          String
+  status          CarStatus @default(AVAILABLE)
 
   description     String?
   imagePath       String?
@@ -98,7 +105,7 @@ model Car {
 }
 
 model Rental {
-  id             Int           @id @default(autoincrement())
+  id             String @id @default(uuid())
   rentalStatus   RentalStatus
   issuedAt       DateTime      @default(now())
 
@@ -110,9 +117,9 @@ model Rental {
 
   totalAmount Float
 
-  carId      Int
-  customerId Int
-  employeeId Int?
+  carId      String
+  customerId String
+  employeeId String?
 
   car      Car      @relation(fields: [carId], references: [id])
   customer Customer @relation(fields: [customerId], references: [id])
@@ -125,13 +132,13 @@ model Rental {
 }
 
 model Payment {
-  id          Int           @id @default(autoincrement())
+  id          String @id @default(uuid())
   amount      Float
   paymentDate DateTime      @default(now())
   method      PaymentMethod
   isPaid      Boolean       @default(false)
 
-  rentalId Int
+  rentalId String
   rental   Rental @relation(fields: [rentalId], references: [id])
 
   createdAt DateTime @default(now())
