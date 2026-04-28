@@ -14,15 +14,12 @@ export class CarService {
 
   create(createCarDto: CreateCarDto) {
     const car: TCreateCar = {
+      ...createCarDto,
       brand: createCarDto.brand.trim(),
       model: createCarDto.model.trim(),
       carType: createCarDto.carType.trim(),
       color: createCarDto.color.trim(),
       licensePlate: createCarDto.licensePlate.trim(),
-      manufactureYear: createCarDto.manufactureYear,
-      pricePerDay: createCarDto.pricePerDay,
-      capacity: createCarDto.capacity,
-      mileage: createCarDto.mileage,
       status: createCarDto.status ?? 'AVAILABLE',
       description: createCarDto.description ?? null,
       imagePath: createCarDto.imagePath ?? null,
