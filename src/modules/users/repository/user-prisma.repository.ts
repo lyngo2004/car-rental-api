@@ -1,4 +1,4 @@
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaClientOrTx } from "prisma/prisma.service";
 import { Role, TUser } from "../entity/user.entity";
 import {
     UserAccount as PrismaUser,
@@ -7,12 +7,11 @@ import {
 import { IUserRepository, TCreateUser } from "./user.repository";
 
 export class UserPrismaRepository implements IUserRepository {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaClientOrTx) { }
 
     toDomainUser(prismaUser: PrismaUser): TUser {
         return {
             ...prismaUser,
-            // password: prismaUser.passwordHash,
             role: prismaUser.role as Role,
         };
     }
@@ -21,7 +20,6 @@ export class UserPrismaRepository implements IUserRepository {
         const user = await this.prisma.userAccount.create({
             data: {
                 ...data,
-                passwordHash: data.password,
                 role: PrismaUserRole.CUSTOMER,
             }
         });
