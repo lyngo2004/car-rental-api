@@ -1,19 +1,27 @@
-import { ConflictException, Inject, Injectable } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import type { IUnitOfWork } from "../unit-of-work/unit-of-work.interface";
-import { RegisterUserDto } from "./dto/register.dto";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from 'bcrypt';
-import { RegisterUserResult } from "./dto/register-response.dto";
+import type { IUserRepository } from "../users/repository/user.repository";
+import { USER_REPOSITORY } from "../users/repository/user.token";
+import { JwtPayload } from "./types/jwt-payload.type";
+import { JwtService } from "@nestjs/jwt";
+import { RegisterResult } from "./dto/register-response.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
 
 @Injectable()
 export class AuthService {
     constructor(
+        @Inject(USER_REPOSITORY)
+        private readonly userRepository: IUserRepository,
         @Inject('IUnitOfWork')
         private readonly unitOfWork: IUnitOfWork,
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private jwtService: JwtService,
     ) { }
 
-    registerUser(dto: RegisterUserDto) : Promise<RegisterUserResult> {
+    register(dto: RegisterDto): Promise<RegisterResult> {
         return this.unitOfWork.run(async ({ users, customers }) => {
             const existing = await users.findByEmail(dto.email);
             if (existing) {
@@ -44,4 +52,38 @@ export class AuthService {
             }
         })
     };
+
+    async login(dto: LoginDto) {
+        const { email, password } = dto;
+
+        const user = await this.userRepository.findByEmail(email);
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!isMatch) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const payload: JwtPayload = {
+            sub: user.id,
+            email: user.email,
+        };
+
+        const accessToken = await this.jwtService.signAsync(
+            payload,
+            {
+                secret: this.configService.get('JWT_ACCESS_SECRET')!,
+                expiresIn: this.configService.get('JWT_ACCESS_EXPIRES')!,
+            },
+        );
+
+        return {
+            accessToken,
+            email: user.email,
+        }
+    }
 }
