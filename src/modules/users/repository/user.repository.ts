@@ -2,7 +2,7 @@ import { TUser } from "../entity/user.entity";
 
 export type TCreateUser = {
     email: string;
-    password: string;
+    passwordHash: string;
 }
 
 export interface IUserRepository {

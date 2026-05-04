@@ -1,20 +1,20 @@
-import { PrismaService } from "prisma/prisma.service";
+import { PrismaClientOrTx } from "prisma/prisma.service";
 import { ICustomerRepository, TCreateCustomer } from "./customer.repository";
 import { TCustomer } from "../entity/customer.entity";
 
 export class CustomerPrismaRepository implements ICustomerRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaClientOrTx) { }
 
     async createCustomer(userId: string, customer: TCreateCustomer): Promise<TCustomer> {
         const createdCustomer = await this.prisma.customer.create({
             data: {
-                ...customer,
                 userId,
+                fullName: customer.fullName,
+                phone: customer.phone,
+                address: customer.address,
+                driverLicense: customer.driverLicense,
+                dateOfBirth: customer.dateOfBirth ?? null,
             },
-            include: {
-                user: true,
-            },
-
         });
         return createdCustomer;
     }

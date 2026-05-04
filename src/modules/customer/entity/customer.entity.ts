@@ -1,5 +1,3 @@
-import { TUser } from "src/modules/users/entity/user.entity";
-
 export type TCustomer = {
     id: string;
     fullName: string;

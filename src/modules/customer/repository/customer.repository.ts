@@ -5,7 +5,7 @@ export type TCreateCustomer = {
     phone: string;
     address: string;
     driverLicense: string;
-    dateOfBirth?: Date | null;  
+    dateOfBirth?: Date | string | null;
 }
 
 export interface ICustomerRepository {
