@@ -9,7 +9,7 @@ export type TCar = {
   pricePerDay: number;
   capacity: number;
   mileage: number;
-  status: CarStatus;
+  status: CarStatus | CarStatus.AVAILABLE;
   description: string | null;
   imagePath: string | null;
   publicImageId: string | null;
