@@ -22,6 +22,8 @@ enum Role {
 enum RentalStatus {
   PENDING
   ACTIVE
+  APPROVED
+  REJECTED
   COMPLETED
   CANCELLED
 }
@@ -86,7 +88,7 @@ model Car {
   color           String
   licensePlate    String  @unique
   manufactureYear Int
-  pricePerDay     Float
+  pricePerHour    Float
   capacity        Int
   mileage         Float
   status          CarStatus @default(AVAILABLE)
@@ -103,8 +105,7 @@ model Car {
 
 model Rental {
   id             String @id @default(uuid())
-  rentalStatus   RentalStatus
-  issuedAt       DateTime      @default(now())
+  rentalStatus   RentalStatus @default(PENDING)
 
   pickUpAt       DateTime
   dropOffAt      DateTime
