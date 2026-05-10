@@ -1,46 +1,36 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsOptional, IsString } from "class-validator";
 import { CarStatus } from "../entity/car.entity";
 
 export class CreateCarDto {
     @IsString()
-    @IsNotEmpty()
-    brand!: string;
+    brand: string;
 
     @IsString()
-    @IsNotEmpty()
-    model!: string;
+    model: string;
 
     @IsString()
-    @IsNotEmpty()
-    carType!: string;
+    carType: string;
     
     @IsString()
-    @IsNotEmpty()
-    color!: string;
+    color: string;
 
     @IsString()
-    @IsNotEmpty()
-    licensePlate!: string;
+    licensePlate: string;
 
     @IsString()
-    @IsNotEmpty()
-    manufactureYear!: number;
+    manufactureYear: number;
 
     @IsString()
-    @IsNotEmpty()
-    pricePerDay!: number;
+    pricePerDay: number;
 
     @IsString()
-    @IsNotEmpty()
-    capacity!: number;
+    capacity: number;
 
     @IsString()
-    @IsNotEmpty()
-    mileage!: number;
+    mileage: number;
 
     @IsEnum(CarStatus)
-    @IsNotEmpty()
-    status!: CarStatus;
+    status: CarStatus;
 
     @IsString()
     @IsOptional()
