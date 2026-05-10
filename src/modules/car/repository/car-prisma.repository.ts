@@ -28,6 +28,7 @@ export class CarPrismaRepository implements ICarRepository {
       model,
       carType,
       color,
+      carStatus,
       sortBy = 'createdAt',
       sortOrder = 'desc',
       page = DEFAULT_PAGE,
@@ -42,6 +43,7 @@ export class CarPrismaRepository implements ICarRepository {
       model,
       carType,
       color,
+      status: carStatus,
       ...(normalizedSearch ? {
         OR: [
           {
@@ -49,6 +51,8 @@ export class CarPrismaRepository implements ICarRepository {
               contains: normalizedSearch,
               mode: 'insensitive',
             },
+          },
+          {
             brand: {
               contains: normalizedSearch,
               mode: 'insensitive',

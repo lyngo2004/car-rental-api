@@ -21,7 +21,7 @@ export class CreateCarDto {
     manufactureYear: number;
 
     @IsString()
-    pricePerDay: number;
+    pricePerHour: number;
 
     @IsString()
     capacity: number;

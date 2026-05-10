@@ -6,10 +6,10 @@ export type TCar = {
   color: string;
   licensePlate: string;
   manufactureYear: number;
-  pricePerDay: number;
+  pricePerHour: number;
   capacity: number;
   mileage: number;
-  status: CarStatus | CarStatus.AVAILABLE;
+  status: CarStatus;
   description: string | null;
   imagePath: string | null;
   publicImageId: string | null;
