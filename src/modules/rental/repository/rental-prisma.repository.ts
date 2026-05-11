@@ -1,5 +1,5 @@
 import { PrismaService } from "prisma/prisma.service";
-import { IRentalRepository, TCreateRental, TQueryRental } from "./rental.repository";
+import { IRentalRepository, TCreateRental, TQueryRental, TUpdateRental } from "./rental.repository";
 import {
     Rental as PrismaRental,
     RentalStatus as PrismaRentalStatus,
@@ -9,6 +9,7 @@ import { RentalStatus, TRental } from "../entity/rental.entity";
 import { Injectable } from "@nestjs/common";
 import { TPaginationResult } from "src/common/types/pagination.type";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "src/common/constants/pagination.constant";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 @Injectable()
 export class RentalPrismaRepository implements IRentalRepository {
@@ -153,14 +154,99 @@ export class RentalPrismaRepository implements IRentalRepository {
         return this.toDomainRental(createdRental);
     }
 
-    async update(id: string, data: Partial<TCreateRental>): Promise<TRental> {
+    async update(id: string, data: TUpdateRental): Promise<TRental> {
         const updatedRental = await this.prisma.rental.update({
             where: { id },
             data: {
                 ...data,
-                rentalStatus: data.rentalStatus as PrismaRentalStatus,
             },
         });
         return this.toDomainRental(updatedRental);
+    }
+
+    async findByCustomerAndId(customerId: string, id: string): Promise<TRental | null> {
+        const rental = await this.prisma.rental.findFirst({
+            where: {
+                id,
+                customerId,
+            },
+        });
+        if (!rental) return null;
+        return this.toDomainRental(rental);
+    }
+
+    async updateToActive(): Promise<void> {
+        await this.prisma.rental.updateMany({
+            where: {
+                rentalStatus: RentalStatus.APPROVED,
+                dropOffAt: {
+                    lte: new Date(),
+                },
+            },
+            data: {
+                rentalStatus: RentalStatus.ACTIVE,
+            },
+        });
+    }
+
+    async updateToCompleted(): Promise<void> {
+        await this.prisma.rental.updateMany({
+            where: {
+                rentalStatus: RentalStatus.ACTIVE,
+                dropOffAt: {
+                    lt: new Date(),
+                },
+            },
+            data: {
+                rentalStatus: RentalStatus.COMPLETED,
+            },
+        });
+    }
+
+    async findOverlappingRental(
+        carId: string,
+        pickUpAt: Date,
+        dropOffAt: Date,
+    ): Promise<TRental[]> {
+        const bufferMs = 2 * 60 * 60 * 1000; // 2 hours
+
+        const bufferedPickUpAt = new Date(
+            pickUpAt.getTime() - bufferMs,
+        );
+
+        const bufferedDropOffAt = new Date(
+            dropOffAt.getTime() + bufferMs,
+        );
+
+        const rentals = await this.prisma.rental.findMany({
+            where: {
+                carId,
+
+                rentalStatus: {
+                    in: [
+                        RentalStatus.PENDING,
+                        RentalStatus.APPROVED,
+                        RentalStatus.ACTIVE,
+                    ],
+                },
+
+                AND: [
+                    {
+                        pickUpAt: {
+                            lt: bufferedDropOffAt,
+                        },
+                    },
+                    {
+                        dropOffAt: {
+                            gt: bufferedPickUpAt,
+                        },
+                    },
+                ],
+            },
+        });
+
+        return rentals.map((rental) =>
+            this.toDomainRental(rental),
+        );
     }
 }

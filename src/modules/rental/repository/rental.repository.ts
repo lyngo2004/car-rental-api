@@ -1,5 +1,6 @@
 import { TPaginationResult } from "src/common/types/pagination.type";
 import { RentalStatus, TRental } from "../entity/rental.entity";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 export type TCreateRental = Omit<TRental, 'id' | 'createdAt' | 'updatedAt'>;
 export type TUpdateRental = Partial<TCreateRental>;
@@ -21,6 +22,10 @@ export interface IRentalRepository {
     findAllByCustomerId(customerId: string, query: TQueryRental): Promise<TPaginationResult<TRental>>;
     findAll(query: TQueryRental): Promise<TPaginationResult<TRental>>;
     findById(id: string): Promise<TRental | null>;
+    findByCustomerAndId(customerId: string, id: string): Promise<TRental | null>;
     create(rental: TCreateRental): Promise<TRental>;
     update(id: string, data: TUpdateRental): Promise<TRental>;
+    updateToActive(): Promise<void>;
+    updateToCompleted(): Promise<void>;
+    findOverlappingRental(carId: string, pickUpAt: Date, dropOffAt: Date): Promise<TRental[]>;
 }
