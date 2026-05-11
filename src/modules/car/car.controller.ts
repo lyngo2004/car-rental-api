@@ -6,10 +6,14 @@ import { QueryCarDto } from './dto/query-car.dto';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Role } from 'src/common/decorators/role.decorator';
 import { Role as RoleEnum } from 'src/modules/users/entity/user.entity';
+import { RentalAvailabilityService } from '../rental/service/rental-availability.service';
 
 @Controller('cars')
 export class CarController {
-  constructor(private readonly carService: CarService) { }
+  constructor(
+    private readonly carService: CarService,
+    private readonly rentalAvailabilityService: RentalAvailabilityService
+  ) { }
 
   @UseGuards(RoleGuard)
   @Role(RoleEnum.EMPLOYEE)
@@ -26,6 +30,14 @@ export class CarController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.carService.findOne(id);
+  }
+
+  @Get('/available')
+  findAvailableCars(
+    @Query('pickUpAt') pickUpAt: string,
+    @Query('dropOffAt') dropOffAt: string,
+  ) {
+    return this.rentalAvailabilityService.findAvailableCars(new Date(pickUpAt), new Date(dropOffAt));
   }
 
   @UseGuards(RoleGuard)

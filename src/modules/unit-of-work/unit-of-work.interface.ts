@@ -1,4 +1,5 @@
 import { ICustomerRepository } from "../customer/repository/customer.repository";
+import { IEmployeeRepository } from "../employee/repository/employee.repository";
 import { IUserRepository } from "../users/repository/user.repository";
 
 export interface IUnitOfWork {

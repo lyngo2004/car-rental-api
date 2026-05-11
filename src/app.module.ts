@@ -10,17 +10,23 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccessTokenStrategy } from './modules/auth/strategies/access-token.strategy';
 import { AcessTokenGuard } from './common/guards/access-token.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { EmployeeModule } from './modules/employee/employee.module';
+import { RentalModule } from './modules/rental/rental.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        ScheduleModule.forRoot(),
         UnitOfWorkModule,
         UserModule,
         AuthModule,
         CustomerModule,
         CarModule,
+        EmployeeModule,
+        RentalModule,
         PrismaModule,
     ],
     providers: [
