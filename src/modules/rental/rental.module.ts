@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
-import { CarModule } from "../car/car.module";
 import { RENTAL_REPOSITORY } from "./repository/rental.token";
-import { RentalPrismaRepository } from "./repository/rental-prisma.repository";
+import { PersistenceModule } from "../persistence/persistence.module";
 import { CustomerModule } from "../customer/customer.module";
 import { EmployeeModule } from "../employee/employee.module";
 import { RentalController } from "./controller/rental.controller";
@@ -9,22 +8,20 @@ import { RentalService } from "./service/rental.service";
 import { UserModule } from "../users/user.module";
 import { AdminRentalController } from "./controller/admin-rental.controller";
 import { RentalAvailabilityService } from "./service/rental-availability.service";
+import { RentalAvailabilityModule } from './rental-availability.module';
 
 @Module({
     imports: [
-        CarModule,
+        PersistenceModule,
         CustomerModule,
         EmployeeModule,
-        UserModule
+        UserModule,
+        RentalAvailabilityModule,
     ],
     controllers: [RentalController, AdminRentalController],
     providers: [
         RentalService,
-        RentalAvailabilityService,
-        {
-            provide: RENTAL_REPOSITORY,
-            useClass: RentalPrismaRepository,
-        }
+        
     ],
     exports: [RENTAL_REPOSITORY]
 })
