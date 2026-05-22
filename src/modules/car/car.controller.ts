@@ -7,6 +7,7 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 import { Role } from 'src/common/decorators/role.decorator';
 import { Role as RoleEnum } from 'src/modules/users/entity/user.entity';
 import { RentalAvailabilityService } from '../rental/service/rental-availability.service';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('cars')
 export class CarController {
@@ -22,22 +23,25 @@ export class CarController {
     return this.carService.create(createCarDto);
   }
 
+  @Public()
   @Get()
   findAll(@Query() query: QueryCarDto) {
     return this.carService.findAll(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.carService.findOne(id);
-  }
-
+  @Public()
   @Get('/available')
   findAvailableCars(
     @Query('pickUpAt') pickUpAt: string,
     @Query('dropOffAt') dropOffAt: string,
   ) {
     return this.rentalAvailabilityService.findAvailableCars(new Date(pickUpAt), new Date(dropOffAt));
+  }
+
+  @Public()
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.carService.findOne(id);
   }
 
   @UseGuards(RoleGuard)

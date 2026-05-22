@@ -4,6 +4,9 @@ import { CarController } from './car.controller';
 import { CarPrismaRepository } from './repository/car-prisma.repository';
 import { CAR_REPOSITORY } from './repository/car.token';
 import { UserModule } from '../users/user.module';
+import { RentalAvailabilityService } from '../rental/service/rental-availability.service';
+import { RENTAL_REPOSITORY } from '../rental/repository/rental.token';
+import { RentalPrismaRepository } from '../rental/repository/rental-prisma.repository';
 
 @Module({
   imports: [UserModule],
@@ -13,7 +16,12 @@ import { UserModule } from '../users/user.module';
     {
       provide: CAR_REPOSITORY,
       useClass: CarPrismaRepository,
-    }
+    },
+    {
+      provide: RENTAL_REPOSITORY,
+      useClass: RentalPrismaRepository,
+    },
+    RentalAvailabilityService,
   ],
   exports: [CAR_REPOSITORY]
 })
