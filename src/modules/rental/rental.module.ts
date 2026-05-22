@@ -7,8 +7,8 @@ import { RentalController } from "./controller/rental.controller";
 import { RentalService } from "./service/rental.service";
 import { UserModule } from "../users/user.module";
 import { AdminRentalController } from "./controller/admin-rental.controller";
-import { RentalAvailabilityService } from "./service/rental-availability.service";
 import { RentalAvailabilityModule } from './rental-availability.module';
+import { RentalPrismaRepository } from "./repository/rental-prisma.repository";
 
 @Module({
     imports: [
@@ -21,7 +21,10 @@ import { RentalAvailabilityModule } from './rental-availability.module';
     controllers: [RentalController, AdminRentalController],
     providers: [
         RentalService,
-        
+        {
+            provide: RENTAL_REPOSITORY,
+            useClass: RentalPrismaRepository,
+        }
     ],
     exports: [RENTAL_REPOSITORY]
 })
