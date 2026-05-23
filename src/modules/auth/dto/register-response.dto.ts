@@ -11,6 +11,7 @@ export class RegisterResult {
 
     phone: string;
     address: string;
+    identityNum: string;
     driverLicense: string;
     dateOfBirth: Date | null;
 }

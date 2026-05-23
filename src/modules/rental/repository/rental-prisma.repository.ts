@@ -155,11 +155,10 @@ export class RentalPrismaRepository implements IRentalRepository {
     }
 
     async update(id: string, data: TUpdateRental): Promise<TRental> {
+        const { carId, customerId, ...updateData } = data;
         const updatedRental = await this.prisma.rental.update({
             where: { id },
-            data: {
-                ...data,
-            },
+            data: updateData,
         });
         return this.toDomainRental(updatedRental);
     }

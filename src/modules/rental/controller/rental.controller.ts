@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Role } from "src/common/decorators/role.decorator";
 import { RoleGuard } from "src/common/guards/role.guard";
 import { Role as RoleEnum } from 'src/modules/users/entity/user.entity';
@@ -6,6 +6,7 @@ import { CreateRentalDto } from "../dto/create-rental.dto";
 import { RentalService } from "../service/rental.service";
 import { CurrentUser } from "src/common/decorators/current-user.decorator";
 import { UpdateRentalDto } from "../dto/update-rental.dto";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 @UseGuards(RoleGuard)
 @Role(RoleEnum.CUSTOMER)
@@ -22,9 +23,10 @@ export class RentalController {
 
     @Get()
     findAll(
-        @CurrentUser('sub') userId: string
+        @CurrentUser('sub') userId: string,
+        @Query() query: PaginationQueryDto
     ) {
-        return this.rentalService.findAllByCustomer(userId);
+        return this.rentalService.findAllByCustomer(userId, query);
     }
 
     @Get(':id')
