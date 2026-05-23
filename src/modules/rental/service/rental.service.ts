@@ -130,20 +130,91 @@ export class RentalService {
         }));
     }
 
+    async findByIdForCustomer(rentalId: string, userId: string): Promise<RentalResponseDto> {
+        const customer = await this.customerRepository.findByUserId(userId);
+        if (!customer) {
+            throw new UnauthorizedException('Customer not found');
+        }
+
+        const rental = await this.rentalRepository.findByCustomerAndId(customer.id, rentalId);
+        if (!rental) {
+            throw new NotFoundException('Rental not found');
+        }
+
+        return RentalResponseDto.fromEntity(rental);
+    }
+
+    async findById(rentalId: string): Promise<RentalResponseDto> {
+        const rental = await this.rentalRepository.findById(rentalId);
+        if (!rental) {
+            throw new NotFoundException('Rental not found');
+        }
+
+        return RentalResponseDto.fromEntity(rental);
+    }
+
     private toUpdateRental(data: UpdateRentalDto): Partial<TUpdateRental> {
-        const { pickUpAt, dropOffAt } = { ...data };
+        const { pickUpAt, dropOffAt, carId, pickUpLocation, dropOffLocation } = { ...data };
 
         const updateData: Partial<TUpdateRental> = {};
 
-        if (pickUpAt) {
+        if (carId !== undefined) {
+            updateData.carId = carId;
+        }
+
+        if (pickUpAt !== undefined) {
             updateData.pickUpAt = new Date(pickUpAt);
         }
 
-        if (dropOffAt) {
+        if (dropOffAt !== undefined) {
             updateData.dropOffAt = new Date(dropOffAt);
         }
 
+        if (pickUpLocation !== undefined) {
+            updateData.pickUpLocation = pickUpLocation;
+        }
+
+        if (dropOffLocation !== undefined) {
+            updateData.dropOffLocation = dropOffLocation;
+        }
+
         return updateData;
+    }
+
+    private async buildUpdateData(rental: TRental, dto: UpdateRentalDto): Promise<Partial<TUpdateRental>> {
+        const updateData = this.toUpdateRental(dto);
+
+        const nextCarId = updateData.carId ?? rental.carId;
+        const nextPickUpAt = updateData.pickUpAt ?? rental.pickUpAt;
+        const nextDropOffAt = updateData.dropOffAt ?? rental.dropOffAt;
+
+        if (nextPickUpAt >= nextDropOffAt) {
+            throw new BadRequestException('Pick-up date must be before drop-off date');
+        }
+
+        const shouldCheckAvailability =
+            nextCarId !== rental.carId ||
+            nextPickUpAt.getTime() !== rental.pickUpAt.getTime() ||
+            nextDropOffAt.getTime() !== rental.dropOffAt.getTime();
+
+        if (!shouldCheckAvailability) {
+            return updateData;
+        }
+
+        const car = await this.carRepository.findById(nextCarId);
+        if (!car) {
+            throw new NotFoundException('Car not found');
+        }
+
+        const isAvailable = await this.rentalAvai.isCarAvailable(car, nextPickUpAt, nextDropOffAt, rental.id);
+        if (!isAvailable) {
+            throw new ConflictException('Car is not available for the selected dates');
+        }
+
+        return {
+            ...updateData,
+            totalAmount: this.calculateTotalAmount(car, nextPickUpAt, nextDropOffAt),
+        };
     }
 
     async updateByCustomer(rentalId: string, userId: string, dto: UpdateRentalDto): Promise<RentalResponseDto> {
@@ -161,7 +232,11 @@ export class RentalService {
             throw new ForbiddenException('Unauthorized');
         }
 
-        const updateData = this.toUpdateRental(dto);
+        if (rental.rentalStatus !== RentalStatus.PENDING) {
+            throw new ForbiddenException('Only pending rentals can be updated');
+        }
+
+        const updateData = await this.buildUpdateData(rental, dto);
         return this.rentalRepository.update(rentalId, updateData).then(RentalResponseDto.fromEntity);
     }
 
@@ -181,9 +256,8 @@ export class RentalService {
             throw new ForbiddenException('Can only update rental assigned to you');
         }
 
-        const updateData =
-        {
-            ...this.toUpdateRental(dto),
+        const updateData = {
+            ...await this.buildUpdateData(rental, dto),
             employeeId: employee.id,
 
         };
