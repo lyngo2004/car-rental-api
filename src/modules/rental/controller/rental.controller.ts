@@ -27,6 +27,14 @@ export class RentalController {
         return this.rentalService.findAllByCustomer(userId);
     }
 
+    @Get(':id')
+    findById(
+        @Param('id') rentalId: string,
+        @CurrentUser('sub') userId: string
+    ) {
+        return this.rentalService.findByIdForCustomer(rentalId, userId);
+    }
+
     @Patch(':id')
     update(
         @Param('id') rentalId: string,
@@ -36,7 +44,7 @@ export class RentalController {
         return this.rentalService.updateByCustomer(rentalId, userId, data);
     }
 
-    @Patch(':id')
+    @Patch(':id/cancel')
     cancel(
         @Param('id') rentalId: string,
         @CurrentUser('sub') userId: string,

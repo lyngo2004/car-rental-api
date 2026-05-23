@@ -207,6 +207,7 @@ export class RentalPrismaRepository implements IRentalRepository {
         carId: string,
         pickUpAt: Date,
         dropOffAt: Date,
+        excludeRentalId?: string,
     ): Promise<TRental[]> {
         const bufferMs = 2 * 60 * 60 * 1000; // 2 hours
 
@@ -221,6 +222,11 @@ export class RentalPrismaRepository implements IRentalRepository {
         const rentals = await this.prisma.rental.findMany({
             where: {
                 carId,
+                ...(excludeRentalId ? {
+                    id: {
+                        not: excludeRentalId,
+                    },
+                } : {}),
 
                 rentalStatus: {
                     in: [

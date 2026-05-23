@@ -27,5 +27,5 @@ export interface IRentalRepository {
     update(id: string, data: TUpdateRental): Promise<TRental>;
     updateToActive(): Promise<void>;
     updateToCompleted(): Promise<void>;
-    findOverlappingRental(carId: string, pickUpAt: Date, dropOffAt: Date): Promise<TRental[]>;
+    findOverlappingRental(carId: string, pickUpAt: Date, dropOffAt: Date, excludeRentalId?: string): Promise<TRental[]>;
 }

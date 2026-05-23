@@ -23,9 +23,11 @@ export class RentalResponseDto {
         dto.rentalStatus = rental.rentalStatus;
         dto.pickUpAt = rental.pickUpAt.toISOString();
         dto.dropOffAt = rental.dropOffAt.toISOString();
+        dto.pickUpLocation = rental.pickUpLocation;
+        dto.dropOffLocation = rental.dropOffLocation;
+        dto.totalAmount = rental.totalAmount;
         dto.createdAt = rental.createdAt.toISOString();
         dto.updatedAt = rental.updatedAt.toISOString();
         return dto;
     }
 }
-

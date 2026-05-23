@@ -14,7 +14,7 @@ export class RentalAvailabilityService {
         private carRepository: ICarRepository
     ) { }
 
-    async isCarAvailable(car: TCar, pickUpAt: Date, dropOffAt: Date): Promise<boolean> {
+    async isCarAvailable(car: TCar, pickUpAt: Date, dropOffAt: Date, excludeRentalId?: string): Promise<boolean> {
         if (pickUpAt >= dropOffAt) {
             return false;
         }
@@ -23,7 +23,7 @@ export class RentalAvailabilityService {
             return false;
         }
 
-        const rentalOverlap = await this.rentalRepository.findOverlappingRental(car.id, pickUpAt, dropOffAt);
+        const rentalOverlap = await this.rentalRepository.findOverlappingRental(car.id, pickUpAt, dropOffAt, excludeRentalId);
         return rentalOverlap.length === 0;
     }
 
