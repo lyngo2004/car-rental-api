@@ -112,19 +112,19 @@ export class RentalService {
         });
     }
 
-    async findAllByCustomer(userId: string): Promise<TPaginationResult<RentalResponseDto>> {
+    async findAllByCustomer(userId: string, query: TQueryRental = {}): Promise<TPaginationResult<RentalResponseDto>> {
         const customer = await this.customerRepository.findByUserId(userId);
         if (!customer) {
             throw new Error('Customer not found');
         }
-        return this.rentalRepository.findAllByCustomerId(customer.id, {}).then((result) => ({
+        return this.rentalRepository.findAllByCustomerId(customer.id, query).then((result) => ({
             ...result,
             data: result.data.map(RentalResponseDto.fromEntity)
         }));
     }
 
-    async findAll(): Promise<TPaginationResult<RentalResponseDto>> {
-        return this.rentalRepository.findAll({}).then((result) => ({
+    async findAll(query: TQueryRental = {}): Promise<TPaginationResult<RentalResponseDto>> {
+        return this.rentalRepository.findAll(query).then((result) => ({
             ...result,
             data: result.data.map(RentalResponseDto.fromEntity)
         }));
@@ -232,8 +232,16 @@ export class RentalService {
             throw new ForbiddenException('Unauthorized');
         }
 
+        if (dto.rentalStatus === RentalStatus.CANCELLED) {
+            return this.toCancelRental(rental);
+        }
+
+        if (dto.rentalStatus !== undefined) {
+            throw new ForbiddenException('Customers can only cancel rental status');
+        }
+
         if (rental.rentalStatus !== RentalStatus.PENDING) {
-            throw new ForbiddenException('Only pending rentals can be updated');
+            throw new ForbiddenException('Only rentals pending can be updated');
         }
 
         const updateData = await this.buildUpdateData(rental, dto);
@@ -254,6 +262,18 @@ export class RentalService {
 
         if (rental.employeeId && rental.employeeId !== employee.id) {
             throw new ForbiddenException('Can only update rental assigned to you');
+        }
+
+        if (dto.rentalStatus === RentalStatus.APPROVED) {
+            return this.approveRental(rentalId, userId);
+        }
+
+        if (dto.rentalStatus === RentalStatus.REJECTED) {
+            return this.rejectRental(rentalId, userId);
+        }
+
+        if (dto.rentalStatus === RentalStatus.CANCELLED) {
+            return this.toCancelRental(rental, employee.id);
         }
 
         const updateData = {
@@ -278,11 +298,13 @@ export class RentalService {
             throw new Error('Can only update rental assigned to you');
         }
         if (rental.rentalStatus !== RentalStatus.PENDING) {
-            throw new Error('Only pending rentals can be approved');
+            throw new BadRequestException('Only rentals pending can be approved');
         }
 
-        rental.employeeId = employee.id;
-        const updateData = this.rentalRepository.update(rentalId, { rentalStatus: RentalStatus.APPROVED });
+        const updateData = this.rentalRepository.update(rentalId, {
+            rentalStatus: RentalStatus.APPROVED,
+            employeeId: employee.id,
+        });
         return updateData.then(RentalResponseDto.fromEntity);
     }
 
@@ -301,18 +323,20 @@ export class RentalService {
             throw new ForbiddenException('Can only update rental assigned to you');
         }
         if (rental.rentalStatus !== RentalStatus.PENDING) {
-            throw new BadRequestException('Only pending rentals can be rejected');
+            throw new BadRequestException('Only rentals pending can be rejected');
         }
 
-        rental.employeeId = employee.id;
-        const updateData = this.rentalRepository.update(rentalId, { rentalStatus: RentalStatus.REJECTED });
+        const updateData = this.rentalRepository.update(rentalId, {
+            rentalStatus: RentalStatus.REJECTED,
+            employeeId: employee.id,
+        });
         return updateData.then(RentalResponseDto.fromEntity);
     }
 
     private async toCancelRental(rental: TRental, employeeId?: string): Promise<RentalResponseDto> {
         const allowedCancelStatuses = [RentalStatus.PENDING, RentalStatus.APPROVED];
         if (!allowedCancelStatuses.includes(rental.rentalStatus)) {
-            throw new ForbiddenException('Only pending or approved rentals can be cancelled');
+            throw new ForbiddenException('Only rentals pending or approved can be cancelled');
         }
 
         return this.rentalRepository.update(rental.id, { rentalStatus: RentalStatus.CANCELLED, employeeId }).then(RentalResponseDto.fromEntity);

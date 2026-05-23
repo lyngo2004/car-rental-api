@@ -13,6 +13,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { RentalModule } from './modules/rental/rental.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         CarModule,
         EmployeeModule,
         RentalModule,
+        PaymentModule,
         PrismaModule,
     ],
     providers: [

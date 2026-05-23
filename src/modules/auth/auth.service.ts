@@ -41,6 +41,7 @@ export class AuthService {
                     fullName: dto.fullName,
                     phone: dto.phone,
                     address: dto.address,
+                    identityNum: dto.identityNum,
                     driverLicense: dto.driverLicense,
                     dateOfBirth: dto.dateOfBirth,
                 }

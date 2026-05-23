@@ -12,6 +12,7 @@ export class CustomerPrismaRepository implements ICustomerRepository {
                 fullName: customer.fullName,
                 phone: customer.phone,
                 address: customer.address,
+                identityNum: customer.identityNum,
                 driverLicense: customer.driverLicense,
                 dateOfBirth: customer.dateOfBirth ?? null,
             },

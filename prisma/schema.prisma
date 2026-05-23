@@ -32,6 +32,14 @@ enum PaymentMethod {
   CASH
   CARD
   TRANSFER
+  FAKE_CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
 model UserAccount {
@@ -53,6 +61,7 @@ model Customer {
   fullName      String
   phone         String
   address       String
+  identityNum   String @default("")
   driverLicense String
   dateOfBirth   DateTime?
 
@@ -132,12 +141,13 @@ model Rental {
 model Payment {
   id          String @id @default(uuid())
   amount      Float
-  paymentDate DateTime      @default(now())
+  paymentDate DateTime?
   method      PaymentMethod
-  isPaid      Boolean       @default(false)
+  status      PaymentStatus @default(PENDING)
 
   rentalId String
   rental   Rental @relation(fields: [rentalId], references: [id])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

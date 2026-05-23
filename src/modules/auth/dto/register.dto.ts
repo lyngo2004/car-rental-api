@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsOptional, IsString, MinLength } from "class-validator";
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
 
 export class RegisterDto {
     @IsEmail()
@@ -16,6 +16,10 @@ export class RegisterDto {
 
     @IsString()
     address: string;
+
+    @IsString()
+    @IsNotEmpty()
+    identityNum: string;
 
     @IsString()
     driverLicense: string;
