@@ -8,7 +8,8 @@
     "test:cov": "jest --coverage",
     "start:dev": "nest start --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node prisma/seed.ts"
+    "car-seed": "ts-node prisma/car-seed.ts",
+    "admin-seed": "ts-node prisma/admin-seed.ts"
   },
   "keywords": [],
   "author": "",
