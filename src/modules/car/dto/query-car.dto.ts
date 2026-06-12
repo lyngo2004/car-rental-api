@@ -28,13 +28,12 @@ export class QueryCarDto extends PaginationQueryDto {
     @IsEnum(CarStatus)
     carStatus?: CarStatus.AVAILABLE;
 
-    @IsIn(['pricePerDay', 'manufactureYear','createdAt'])
+    @IsIn(['pricePerHour', 'manufactureYear','createdAt'])
     @IsOptional()
-    sortBy?: 'pricePerDay' | 'manufactureYear' | 'createdAt';
+    sortBy?: 'pricePerHour' | 'manufactureYear' | 'createdAt';
 
     @IsIn(['asc', 'desc'])
     @IsOptional()
     sortOrder?: 'asc' | 'desc';
 }
-
 

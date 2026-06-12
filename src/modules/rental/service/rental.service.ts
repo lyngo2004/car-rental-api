@@ -21,6 +21,8 @@ import { RentalAvailabilityService } from "./rental-availability.service";
 @Injectable()
 export class RentalService {
     private readonly minRentalDurationMs = 2 * 60 * 60 * 1000;
+    private readonly hoursPerDay = 24;
+    private readonly priceRoundingUnit = 10000;
 
     constructor(
         @Inject(RENTAL_REPOSITORY)
@@ -37,7 +39,16 @@ export class RentalService {
     ) { }
 
     private calculateTotalAmount(car: TCar, pickUpAt: Date, dropOffAt: Date): number {
-        return car.pricePerHour * Math.ceil((dropOffAt.getTime() - pickUpAt.getTime()) / (1000 * 60 * 60));
+        // Car prices are currently stored as daily values, while rentals bill by rounded hourly price.
+        const hourlyPrice = Math.round(
+            car.pricePerHour / this.hoursPerDay / this.priceRoundingUnit
+        ) * this.priceRoundingUnit;
+        const rentalHours = Math.max(
+            1,
+            Math.round((dropOffAt.getTime() - pickUpAt.getTime()) / (1000 * 60 * 60))
+        );
+
+        return hourlyPrice * rentalHours;
     }
 
     private validateRentalWindow(pickUpAt: Date, dropOffAt: Date): void {

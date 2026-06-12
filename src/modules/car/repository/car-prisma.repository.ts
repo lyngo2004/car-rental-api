@@ -57,7 +57,25 @@ export class CarPrismaRepository implements ICarRepository {
               contains: normalizedSearch,
               mode: 'insensitive',
             },
-          }
+          },
+          {
+            licensePlate: {
+              contains: normalizedSearch,
+              mode: 'insensitive',
+            },
+          },
+          {
+            carType: {
+              contains: normalizedSearch,
+              mode: 'insensitive',
+            },
+          },
+          {
+            color: {
+              contains: normalizedSearch,
+              mode: 'insensitive',
+            },
+          },
         ],
       } : {}),
     }

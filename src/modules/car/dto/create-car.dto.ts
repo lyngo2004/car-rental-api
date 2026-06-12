@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { CarStatus } from "../entity/car.entity";
 
 export class CreateCarDto {
@@ -17,16 +17,16 @@ export class CreateCarDto {
     @IsString()
     licensePlate: string;
 
-    @IsString()
+    @IsNumber()
     manufactureYear: number;
 
-    @IsString()
+    @IsNumber()
     pricePerHour: number;
 
-    @IsString()
+    @IsNumber()
     capacity: number;
 
-    @IsString()
+    @IsNumber()
     mileage: number;
 
     @IsEnum(CarStatus)

@@ -10,7 +10,7 @@ export type TQueryCar = {
   carType?: string;
   color?: string;
   carStatus?: CarStatus;
-  sortBy?: 'pricePerDay' | 'manufactureYear' | 'createdAt';
+  sortBy?: 'pricePerHour' | 'manufactureYear' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
 
   page?: number;
