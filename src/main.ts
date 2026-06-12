@@ -15,7 +15,12 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.enableCors({ origin: configService.get<string>('FE_URL'), credentials: true });
+
+  const feUrl = configService.get<string>('FE_URL');
+  app.enableCors({
+    origin: feUrl ? feUrl.split(',').map((origin) => origin.trim()) : true,
+    credentials: true,
+  });
 
   const port = Number(configService.get<string>('PORT') ?? 3000);
 

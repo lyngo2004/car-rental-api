@@ -7,6 +7,8 @@ import type { ICarRepository } from "src/modules/car/repository/car.repository";
 
 @Injectable()
 export class RentalAvailabilityService {
+    private readonly minRentalDurationMs = 2 * 60 * 60 * 1000;
+
     constructor(
         @Inject(RENTAL_REPOSITORY)
         private rentalRepository: IRentalRepository,
@@ -15,7 +17,12 @@ export class RentalAvailabilityService {
     ) { }
 
     async isCarAvailable(car: TCar, pickUpAt: Date, dropOffAt: Date, excludeRentalId?: string): Promise<boolean> {
-        if (pickUpAt >= dropOffAt) {
+        if (
+            Number.isNaN(pickUpAt.getTime()) ||
+            Number.isNaN(dropOffAt.getTime()) ||
+            pickUpAt >= dropOffAt ||
+            dropOffAt.getTime() - pickUpAt.getTime() < this.minRentalDurationMs
+        ) {
             return false;
         }
 
@@ -28,8 +35,16 @@ export class RentalAvailabilityService {
     }
 
     async findAvailableCars(pickUpAt: Date, dropOffAt: Date): Promise<TCar[]> {
+        if (Number.isNaN(pickUpAt.getTime()) || Number.isNaN(dropOffAt.getTime())) {
+            throw new BadRequestException("Invalid rental time.");
+        }
+
         if (pickUpAt >= dropOffAt) {
             throw new BadRequestException("Pick-up date must be before drop-off date.");
+        }
+
+        if (dropOffAt.getTime() - pickUpAt.getTime() < this.minRentalDurationMs) {
+            throw new BadRequestException("Rental duration must be at least 2 hours.");
         }
 
         const cars = await this.carRepository.findAll({

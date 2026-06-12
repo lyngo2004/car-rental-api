@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { RENTAL_REPOSITORY } from "../repository/rental.token";
-import type { IRentalRepository, TCreateRental, TUpdateRental } from "../repository/rental.repository";
+import type { IRentalRepository, TCreateRental, TQueryRental, TUpdateRental } from "../repository/rental.repository";
 import { RentalResponseDto } from "../dto/rental-response.dto";
 import { CreateRentalDto } from "../dto/create-rental.dto";
 import { CUSTOMER_REPOSITORY } from "../../customer/repository/customer.token";
@@ -20,6 +20,8 @@ import { RentalAvailabilityService } from "./rental-availability.service";
 
 @Injectable()
 export class RentalService {
+    private readonly minRentalDurationMs = 2 * 60 * 60 * 1000;
+
     constructor(
         @Inject(RENTAL_REPOSITORY)
         private rentalRepository: IRentalRepository,
@@ -36,6 +38,20 @@ export class RentalService {
 
     private calculateTotalAmount(car: TCar, pickUpAt: Date, dropOffAt: Date): number {
         return car.pricePerHour * Math.ceil((dropOffAt.getTime() - pickUpAt.getTime()) / (1000 * 60 * 60));
+    }
+
+    private validateRentalWindow(pickUpAt: Date, dropOffAt: Date): void {
+        if (Number.isNaN(pickUpAt.getTime()) || Number.isNaN(dropOffAt.getTime())) {
+            throw new BadRequestException('Invalid rental time');
+        }
+
+        if (pickUpAt >= dropOffAt) {
+            throw new BadRequestException('Pick-up date must be before drop-off date');
+        }
+
+        if (dropOffAt.getTime() - pickUpAt.getTime() < this.minRentalDurationMs) {
+            throw new BadRequestException('Rental duration must be at least 2 hours');
+        }
     }
 
     private async create(data: {
@@ -56,6 +72,7 @@ export class RentalService {
 
         const pickUpAt = new Date(data.pickUpAt);
         const dropOffAt = new Date(data.dropOffAt);
+        this.validateRentalWindow(pickUpAt, dropOffAt);
 
         const isAvailable = await this.rentalAvai.isCarAvailable(car, pickUpAt, dropOffAt);
 
@@ -188,9 +205,7 @@ export class RentalService {
         const nextPickUpAt = updateData.pickUpAt ?? rental.pickUpAt;
         const nextDropOffAt = updateData.dropOffAt ?? rental.dropOffAt;
 
-        if (nextPickUpAt >= nextDropOffAt) {
-            throw new BadRequestException('Pick-up date must be before drop-off date');
-        }
+        this.validateRentalWindow(nextPickUpAt, nextDropOffAt);
 
         const shouldCheckAvailability =
             nextCarId !== rental.carId ||
